@@ -1,23 +1,19 @@
 #!/bin/bash
-#SBATCH --job-name=bench2
+#SBATCH --job-name=toposingan
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=12
-#SBATCH --output=n1c12clover500x500.log
+#SBATCH --ntasks-per-node=8
+#SBATCH --output=log_agricultural_fields.log
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:2
-#SBATCH --mem=50G
+#SBATCH --mem=20G
 module load pytorch/2.2.0
 
 start_time=$(date +%s)
 
-# Execute the Python script
-python -u /home/jacks.local/mohsen.ahmadkhani/imageprocessing/singan/singan/main_train.py --input_name clover500x500.png --nc_z 4 --nc_im 4 --gpu_id 0
+python -u toposingan/main_train.py --input_name agricultural_fields.png --nc_z 4 --nc_im 4 --gpu_id 0
 
-# End time
 end_time=$(date +%s)
 
-# Calculate and display the elapsed time
 elapsed_time=$((end_time - start_time))
 echo "Execution time: $elapsed_time seconds"
-
 
