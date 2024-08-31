@@ -37,8 +37,7 @@ if __name__ == '__main__':
         os.makedirs(dir2save)
     except OSError:
         pass
-
-    shutil.copy(os.path.join(os.getcwd(),"toposingan/TopoSinGAN/training.py"), os.path.join(dir2save, f"training_{seed_for_img_dir}.py"))
+        
     real = functions.read_image(opt)
     functions.adjust_scales2image(real, opt)
     train(opt, Gs, Zs, reals, NoiseAmp, seed_for_img_dir)
