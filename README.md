@@ -1,7 +1,7 @@
 # TopoSinGAN
 ## Learning a Topology-Aware Generative Model from a Single Image
 
-![TopoSinGAN](topoed.jpg)
+![TopoSinGAN](topoed.png)
 
 ## Instructions:
 

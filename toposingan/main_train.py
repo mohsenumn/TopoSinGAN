@@ -7,6 +7,14 @@ import random
 import os, shutil
 import time 
 
+def generate_unique_dir(opt, seed_for_img_dir):
+    while True:
+        dir2save = functions.generate_dir2save(opt, seed_for_img_dir)
+        if not os.path.exists(dir2save):
+            return dir2save
+        seed_for_img_dir = random.randint(1, 2000)
+        opt = functions.post_config(opt, seed_for_img_dir)
+
 if __name__ == '__main__':
     now = time.time()
     seed_for_img_dir = random.randint(1,2000)
@@ -22,19 +30,19 @@ if __name__ == '__main__':
     Zs = []
     reals = []
     NoiseAmp = []
-    dir2save = functions.generate_dir2save(opt, seed_for_img_dir)
-    os.path
-    if (os.path.exists(dir2save)):
-        print('trained model already exist')
-    else:
-        try:
-            os.makedirs(dir2save)
-        except OSError:
-            pass
-        
-        real = functions.read_image(opt)
-        functions.adjust_scales2image(real, opt)
-        train(opt, Gs, Zs, reals, NoiseAmp, seed_for_img_dir)
-        then = time.time()
-        print('****RUNTIME: ', then - now)
-        SinGAN_generate(Gs,Zs,reals,NoiseAmp,opt)
+
+    dir2save = generate_unique_dir(opt, seed_for_img_dir)
+
+    try:
+        os.makedirs(dir2save)
+    except OSError:
+        pass
+
+    shutil.copy(os.path.join(os.getcwd(),"toposingan/TopoSinGAN/training.py"), os.path.join(dir2save, f"training_{seed_for_img_dir}.py"))
+    real = functions.read_image(opt)
+    functions.adjust_scales2image(real, opt)
+    train(opt, Gs, Zs, reals, NoiseAmp, seed_for_img_dir)
+    then = time.time()
+    print('****RUNTIME: ', then - now)
+    SinGAN_generate(Gs,Zs,reals,NoiseAmp,opt)
+
