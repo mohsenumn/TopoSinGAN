@@ -65,7 +65,7 @@ def train(opt,Gs,Zs,reals,NoiseAmp, seed_for_img_dir):
 def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
     c1=10
     c2=5
-    c3=0.145
+    c3=0.15
     real = reals[len(Gs)]
     opt.nzx = real.shape[2]
     opt.nzy = real.shape[3]
@@ -96,11 +96,8 @@ def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
     D_real2plot = []
     D_fake2plot = []
     z_opt2plot = []
-    if len(Gs) > 6:
-        niter = 4000
-    else:
-        niter = opt.niter
-    for epoch in range(niter):
+
+    for epoch in range(opt.niter):
         if (Gs == []) & (opt.mode != 'SR_train'):
             z_opt = functions.generate_noise([1,opt.nzx,opt.nzy], device=opt.device)
             z_opt = m_noise(z_opt.expand(1,opt.nc_z,opt.nzx,opt.nzy))
@@ -190,15 +187,17 @@ def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
                 rec_loss.backward(retain_graph=True)
                 rec_loss = rec_loss.detach()
                 
-                ### TOPO LOSS
+        ############################
+        # Topo Loss
+        ###########################
                 if len(Gs)>4:
                     topo_loss = TopologicalLoss()
-                    sigmoid_layer = CustSigmoid(alpha=55, beta=0.5)
+                    sigmoid_layer = CustSigmoid(alpha=10, beta=0.5)
                     xx = fake[:, 3:4, :, :]
                     siged = sigmoid_layer(xx)
                     tloss = topo_loss(siged)*c3
                     tloss.backward(retain_graph=True)
-                    tloss = tloss.detach()
+                   # tloss = tloss.detach()
                 else:
                     tloss = 0
             else:
@@ -300,7 +299,6 @@ def train_paint(opt,Gs,Zs,reals,NoiseAmp,centers,paint_inject_scale):
         del D_curr,G_curr
     return
 
-
 def init_models(opt):
     #generator initialization:
     netG = models.GeneratorConcatSkip2CleanAdd(opt).to(opt.device)
@@ -313,6 +311,3 @@ def init_models(opt):
     if opt.netD != '':
         netD.load_state_dict(torch.load(opt.netD))
     return netD, netG
-
-
-
