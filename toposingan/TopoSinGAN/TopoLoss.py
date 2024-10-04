@@ -1,15 +1,11 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-import matplotlib.pyplot as plt
 
 class TopologicalLoss(nn.Module):
     def __init__(self):
-        super(TopologicalLoss2, self).__init__()
-        self.kernel1 = torch.tensor([ [1, 1, 1],
-                                      [1, 0, 1],
-                                      [1, 1, 1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
-
+        super(TopologicalLoss, self).__init__()
+        
         self.kernel01 = torch.tensor([[1, 1, 1],
                                       [0, 0, 1],
                                       [1, 1, 1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
@@ -35,6 +31,9 @@ class TopologicalLoss(nn.Module):
                                       [1, 0, 1],
                                       [1, 1, 1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
         
+        self.kernel09 = torch.tensor([ [1, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 1]], dtype=torch.float32).unsqueeze(0).unsqueeze(0)
         
         self.kernel20 = torch.tensor([[1, 1, 1, 1, 1],
                                      [1, 0, 0, 0, 1],
@@ -100,7 +99,7 @@ class TopologicalLoss(nn.Module):
                               [1, 0, 0, 0], 
                               [1, 0, 0, 0],
                               [1, 1, 1, 1]]).view(1,1,4,4)
-        self.kernels = [self.kernel01, self.kernel02, self.kernel03, self.kernel04, self.kernel05, self.kernel06, self.kernel07, self.kernel08, self.kernel1, self.kernel20, self.kernel21, self.kernel22, self.kernel23, self.kernel24, self.kernel3, self.kernel4,self.kernel5, self.kernel6, self.kernel7,self.kernel8, self.kernel9, self.kernel10]
+        self.kernels = [self.kernel01, self.kernel02, self.kernel03, self.kernel04, self.kernel05, self.kernel06, self.kernel07, self.kernel08]
 
     def soft_threshold(self, x, threshold, alpha=10.0):
         return torch.sigmoid(alpha * (-x + threshold))
@@ -114,30 +113,27 @@ class TopologicalLoss(nn.Module):
             pad = 2
         neighbors_count = F.conv2d(mask, kernel, padding=pad)
         if kernel_size == 4:
-          line_ends = self.soft_threshold(neighbors_count[:,:,:-1, :-1], 1.0) * mask
+            line_ends = self.soft_threshold(neighbors_count[:,:,:-1, :-1], 1.0) * mask
         else:
-          line_ends = self.soft_threshold(neighbors_count, 1.0) * mask
+            line_ends = self.soft_threshold(neighbors_count, 1.0) * mask
         if padded:
-          line_ends = line_ends[:, :, 1:-1, 1:-1]
+            line_ends = line_ends[:, :, 1:-1, 1:-1]
         return line_ends
 
     def forward(self, mask):
         epss = torch.zeros_like(mask)
-        i=1
         for kernel in self.kernels:
-          if i in [2,3,4,5,6,7,8,9]:
             if mask.is_cuda:
                 kernel = kernel.cuda()
             padding = (1, 1, 1, 1)
             padded_mask = F.pad(mask[0], padding, 'constant', 1)
             eps = self.endpoints(padded_mask.unsqueeze(0), kernel = kernel, padded=True)
             epss += eps
-          i+=1
-        loss = (epss[0]/8).sum()
+        loss = (epss[0]/len(self.kernels)).sum()
         return loss
 
 class CustSigmoid(nn.Module):
-    def __init__(self, alpha=55, beta=0.5):
+    def __init__(self, alpha=10, beta=0.5):
         super(CustSigmoid, self).__init__()
         self.alpha = alpha
         self.beta = beta
