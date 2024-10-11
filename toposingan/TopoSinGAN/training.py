@@ -63,9 +63,13 @@ def train(opt,Gs,Zs,reals,NoiseAmp, seed_for_img_dir):
 
 
 def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
-    c1=10
-    c2=5
+    # c1=50 #10
+    # c2=20 #5
+    # c3=0.15
+    c1=1 
+    c2=1
     c3=0.15
+    # c3=0.4
     real = reals[len(Gs)]
     opt.nzx = real.shape[2]
     opt.nzy = real.shape[3]
@@ -97,7 +101,7 @@ def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
     D_fake2plot = []
     z_opt2plot = []
 
-    for epoch in range(opt.niter):
+    for epoch in range(2000): #opt.niter
         if (Gs == []) & (opt.mode != 'SR_train'):
             z_opt = functions.generate_noise([1,opt.nzx,opt.nzy], device=opt.device)
             z_opt = m_noise(z_opt.expand(1,opt.nc_z,opt.nzx,opt.nzy))
@@ -190,12 +194,17 @@ def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
         ############################
         # Topo Loss
         ###########################
-                if len(Gs)>4:
+                if len(Gs)>12:
+                    # if len(Gs) == 8:
+                    #     c3 = c3/10
                     topo_loss = TopologicalLoss()
                     sigmoid_layer = CustSigmoid(alpha=10, beta=0.5)
                     xx = fake[:, 3:4, :, :]
+                    # xx = fake
                     siged = sigmoid_layer(xx)
-                    tloss = topo_loss(siged)*c3
+                    TL = topo_loss(siged)
+                    tloss = TL[0]*c3
+                    torch.save(TL[1], '/mmfs1/scratch/jacks.local/mohsen.ahmadkhani/TopoSinGAN/outputs/epss.pth')
                     tloss.backward(retain_graph=True)
                    # tloss = tloss.detach()
                 else:
@@ -300,14 +309,18 @@ def train_paint(opt,Gs,Zs,reals,NoiseAmp,centers,paint_inject_scale):
     return
 
 def init_models(opt):
-    #generator initialization:
     netG = models.GeneratorConcatSkip2CleanAdd(opt).to(opt.device)
     netG.apply(models.weights_init)
     if opt.netG != '':
         netG.load_state_dict(torch.load(opt.netG))
-    #discriminator initialization:
     netD = models.WDiscriminator(opt).to(opt.device)
     netD.apply(models.weights_init)
     if opt.netD != '':
         netD.load_state_dict(torch.load(opt.netD))
     return netD, netG
+
+
+
+
+
+
