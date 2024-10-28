@@ -19,6 +19,10 @@ python -u toposingan/main_train.py --input_name agricultural_fields.png --nc_z 4
 python -u toposingan/main_train.py --input_name agricultural_fields.png --nc_z 4 --nc_im 4 --not_cuda
 ```
 
+## Node Topology Clustering (NTC) Evaluation Metric
+
+[GitHub Repository for NTC Evaluation Metric](https://github.com/mohsenumn/NTC)
+
 ### References:
 
 ```
