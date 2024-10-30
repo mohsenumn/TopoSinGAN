@@ -194,17 +194,14 @@ def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
         ############################
         # Topo Loss
         ###########################
-                if len(Gs)>12:
-                    # if len(Gs) == 8:
-                    #     c3 = c3/10
+                if len(Gs)>4:
                     topo_loss = TopologicalLoss()
                     sigmoid_layer = CustSigmoid(alpha=10, beta=0.5)
                     xx = fake[:, 3:4, :, :]
-                    # xx = fake
                     siged = sigmoid_layer(xx)
                     TL = topo_loss(siged)
                     tloss = TL[0]*c3
-                    torch.save(TL[1], '/mmfs1/scratch/jacks.local/mohsen.ahmadkhani/TopoSinGAN/outputs/epss.pth')
+                    #torch.save(TL[1], 'outputs/epss.pth')
                     tloss.backward(retain_graph=True)
                    # tloss = tloss.detach()
                 else:
