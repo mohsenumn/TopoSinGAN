@@ -63,13 +63,9 @@ def train(opt,Gs,Zs,reals,NoiseAmp, seed_for_img_dir):
 
 
 def train_single_scale(netD,netG,reals,Gs,Zs,in_s,NoiseAmp,opt,centers=None):
-    # c1=50 #10
-    # c2=20 #5
-    # c3=0.15
-    c1=1 
-    c2=1
-    c3=0.15
-    # c3=0.4
+    c1=10
+    c2=5
+    c3=0.12
     real = reals[len(Gs)]
     opt.nzx = real.shape[2]
     opt.nzy = real.shape[3]
